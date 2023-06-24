@@ -6,27 +6,23 @@ import com.spire.xls.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.EnumSet;
+import java.util.stream.Stream;
 
 public class CreateXlsxFromXlsb {
 
-    private static String fileNameStr = "Dovamo.xlsb";
-
     @FunctionName("BlobTrigger")
-    @StorageAccount("AzureWebJobsStorage")
+    @StorageAccount("digiipStorage")
     public void BlobTriggerToBlobTest(
-            @BlobTrigger(name = "triggerBlob", path = "samples/{name}", dataType = "binary") byte[] triggerBlob,
-            @BindingName("name") String fileName,
-            @BlobInput(name = "inputBlob", path = "samples/{name}", dataType = "binary") byte[] inputBlob,
-            @BlobOutput(name = "outputBlob", path = "output/{name}", dataType = "binary") OutputBinding<byte[]> outputBlob,
-            final ExecutionContext context
+           @BlobTrigger(name = "triggerBlob", path = "samples/{name}", dataType = "binary", connection = "DIGIIP_CONNECTION") Stream triggerBlob,
+           @BlobOutput(name = "outputBlob", path = "output/{name}", dataType = "binary", connection = "DIGIIP_CONNECTION") Stream outputBlob,
+           @BindingName("name") String fileName, final ExecutionContext context
     ) {
-        fileNameStr = fileName;
-        context.getLogger().info("Java Blob trigger function BlobTriggerToBlobTest processed a blob.\n Name: " + fileName + "\n Size: " + triggerBlob.length + " Bytes");
-        outputBlob.setValue(inputBlob);
+        context.getLogger().info("Java Blob trigger function BlobTriggerToBlobTest processed a blob.\n Name: " + fileName + "\n Size: " + triggerBlob.toString() + " Bytes");
+        runExcelConvertor( outputBlob, fileName);
     }
-
-        public static void main(String[] args) {
+        public void runExcelConvertor(Stream outputBlob, String fileNameStr) {
 
             long startTime = System.currentTimeMillis();
             Workbook workbook = new Workbook();
@@ -61,6 +57,4 @@ public class CreateXlsxFromXlsb {
                 e.printStackTrace();
             }
         }
-
-
 }
